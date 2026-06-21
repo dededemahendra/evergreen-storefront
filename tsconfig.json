@@ -6,6 +6,15 @@
     "prettier.config.js",
     "vite.config.ts"
   ],
+  "exclude": [
+    "node_modules",
+    ".output",
+    ".nitro",
+    "dist",
+    "sanity",
+    "sanity.config.ts",
+    "sanity.cli.ts"
+  ],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",

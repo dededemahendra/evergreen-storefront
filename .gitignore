@@ -4,12 +4,20 @@ dist
 dist-ssr
 *.local
 .env*
+!.env.example
 .tanstack
 .wrangler
 .output
+.nitro
 .vinxi
 __unconfig*
 todos.json
+
+# local order store (MVP)
+.data
+
+# sanity studio
+.sanity
 
 # typescript
 *.tsbuildinfo
