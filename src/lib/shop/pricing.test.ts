@@ -14,6 +14,14 @@ function item(price: number, quantity = 1): CartItem {
   }
 }
 
+function giftItem(price: number, quantity = 1): CartItem {
+  return {
+    ...item(price, quantity),
+    variantId: `gc-${price}-${quantity}`,
+    kind: "gift_card",
+  }
+}
+
 const percent10: Discount = {
   code: "X",
   kind: "percent",
@@ -95,5 +103,37 @@ describe("computeTotals", () => {
     const t = computeTotals([item(50)])
     expect(t.giftCardApplied).toBe(0)
     expect(t.amountDue).toBe(t.total)
+  })
+})
+
+describe("computeTotals — gift cards exempt from tax/shipping/discount", () => {
+  it("a gift-card-only cart has no tax or shipping", () => {
+    const t = computeTotals([giftItem(50)])
+    expect(t.subtotal).toBe(50)
+    expect(t.shipping).toBe(0)
+    expect(t.tax).toBe(0)
+    expect(t.total).toBe(50)
+  })
+
+  it("does not discount a gift card", () => {
+    const t = computeTotals([giftItem(50)], { discount: percent10 })
+    expect(t.discountAmount).toBe(0)
+    expect(t.total).toBe(50)
+  })
+
+  it("taxes/ships only the physical items in a mixed cart", () => {
+    const t = computeTotals([item(50), giftItem(50)])
+    expect(t.subtotal).toBe(100)
+    expect(t.shipping).toBe(9) // physical 50 < 75
+    expect(t.tax).toBe(4) // 50 * 0.08
+    expect(t.total).toBe(113) // 50 physical + 50 gift card + 9 + 4
+  })
+
+  it("discounts only the physical items in a mixed cart", () => {
+    const t = computeTotals([item(100), giftItem(50)], { discount: percent10 })
+    expect(t.discountAmount).toBe(10) // 10% of physical 100
+    expect(t.shipping).toBe(0) // discounted physical 90 >= 75
+    expect(t.tax).toBe(7.2) // 90 * 0.08
+    expect(t.total).toBe(147.2) // 90 + 50 + 0 + 7.2
   })
 })
