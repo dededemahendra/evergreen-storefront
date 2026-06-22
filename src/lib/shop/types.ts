@@ -88,10 +88,23 @@ export const checkoutCustomerSchema = z.object({
 })
 export type CheckoutCustomer = z.infer<typeof checkoutCustomerSchema>
 
+export const discountKindSchema = z.enum(["percent", "fixed", "free_shipping"])
+export type DiscountKind = z.infer<typeof discountKindSchema>
+
+/** A validated promo code, as returned by `POST /api/discounts/validate`. */
+export const discountSchema = z.object({
+  code: z.string(),
+  kind: discountKindSchema,
+  value: z.number().nonnegative(),
+  label: z.string(),
+})
+export type Discount = z.infer<typeof discountSchema>
+
 /** Request body accepted by `POST /api/orders`. */
 export const createOrderSchema = z.object({
   items: z.array(cartItemSchema).min(1, "Cart is empty"),
   customer: checkoutCustomerSchema,
+  discountCode: z.string().optional(),
 })
 export type CreateOrderInput = z.infer<typeof createOrderSchema>
 
@@ -114,5 +127,7 @@ export const orderSchema = z.object({
   currency: z.string(),
   status: orderStatusSchema,
   createdAt: z.string(),
+  discountCode: z.string().optional(),
+  discountAmount: z.number().default(0),
 })
 export type Order = z.infer<typeof orderSchema>

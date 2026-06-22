@@ -1,5 +1,7 @@
 import { Hono } from "hono"
+import { z } from "zod"
 import { createOrderSchema } from "@/lib/shop/types"
+import { validateDiscount } from "./discounts"
 import { createOrder, getOrder } from "./orders"
 
 /**
@@ -12,6 +14,20 @@ import { createOrder, getOrder } from "./orders"
 export const api = new Hono().basePath("/api")
 
 api.get("/health", (c) => c.json({ ok: true }))
+
+const validateDiscountSchema = z.object({
+  code: z.string(),
+  subtotal: z.number().nonnegative(),
+})
+
+api.post("/discounts/validate", async (c) => {
+  const body = await c.req.json().catch(() => null)
+  const parsed = validateDiscountSchema.safeParse(body)
+  if (!parsed.success) return c.json({ error: "Invalid request" }, 400)
+  const result = validateDiscount(parsed.data.code, parsed.data.subtotal)
+  if (!result.ok) return c.json({ error: result.reason }, 400)
+  return c.json({ discount: result.discount })
+})
 
 api.post("/orders", async (c) => {
   const body = await c.req.json().catch(() => null)

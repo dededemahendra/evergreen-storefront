@@ -1,5 +1,5 @@
 import { siteConfig } from "@/config/site"
-import type { CartItem } from "./types"
+import type { CartItem, Discount } from "./types"
 
 /**
  * Money / totals helpers. Shared by the cart UI and the order API so the
@@ -22,6 +22,7 @@ export function roundMoney(amount: number): number {
 
 export interface OrderTotals {
   subtotal: number
+  discountAmount: number
   shipping: number
   tax: number
   total: number
@@ -29,20 +30,50 @@ export interface OrderTotals {
   amountToFreeShipping: number
 }
 
-export function computeTotals(items: CartItem[]): OrderTotals {
+/** Discount value off the subtotal (free_shipping reduces shipping, not this). */
+export function discountAmount(
+  discount: Discount | undefined,
+  subtotal: number
+): number {
+  if (!discount) return 0
+  if (discount.kind === "percent") {
+    return roundMoney(subtotal * (discount.value / 100))
+  }
+  if (discount.kind === "fixed") {
+    return Math.min(roundMoney(discount.value), subtotal)
+  }
+  return 0
+}
+
+export function computeTotals(
+  items: CartItem[],
+  opts: { discount?: Discount } = {}
+): OrderTotals {
   const subtotal = roundMoney(
     items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   )
-  const shipping =
-    subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT
-  const tax = roundMoney(subtotal * TAX_RATE)
-  const total = roundMoney(subtotal + shipping + tax)
-  const amountToFreeShipping =
-    subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD
-      ? 0
-      : roundMoney(FREE_SHIPPING_THRESHOLD - subtotal)
+  const discount = opts.discount
+  const discountAmt = discountAmount(discount, subtotal)
+  const discountedSubtotal = roundMoney(subtotal - discountAmt)
+  const qualifiesFreeShipping =
+    discount?.kind === "free_shipping" ||
+    discountedSubtotal === 0 ||
+    discountedSubtotal >= FREE_SHIPPING_THRESHOLD
+  const shipping = qualifiesFreeShipping ? 0 : SHIPPING_FLAT
+  const tax = roundMoney(discountedSubtotal * TAX_RATE)
+  const total = roundMoney(discountedSubtotal + shipping + tax)
+  const amountToFreeShipping = qualifiesFreeShipping
+    ? 0
+    : roundMoney(FREE_SHIPPING_THRESHOLD - discountedSubtotal)
 
-  return { subtotal, shipping, tax, total, amountToFreeShipping }
+  return {
+    subtotal,
+    discountAmount: discountAmt,
+    shipping,
+    tax,
+    total,
+    amountToFreeShipping,
+  }
 }
 
 export function formatPrice(

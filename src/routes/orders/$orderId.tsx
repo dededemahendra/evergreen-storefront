@@ -115,6 +115,14 @@ function OrderPage() {
               <span className="text-muted-foreground">Subtotal</span>
               <span>{formatPrice(order.subtotal)}</span>
             </div>
+            {order.discountAmount > 0 ? (
+              <div className="flex justify-between text-primary">
+                <span>
+                  Discount{order.discountCode ? ` (${order.discountCode})` : ""}
+                </span>
+                <span>−{formatPrice(order.discountAmount)}</span>
+              </div>
+            ) : null}
             <div className="flex justify-between">
               <span className="text-muted-foreground">Shipping</span>
               <span>
