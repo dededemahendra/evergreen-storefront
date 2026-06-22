@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useForm } from "@tanstack/react-form"
 import type { AnyFieldApi } from "@tanstack/react-form"
@@ -13,12 +14,13 @@ import {
   useCartActions,
   useCartHydrated,
   useCartItems,
-  useCartTotals,
 } from "@/lib/cart/store"
+import { validateDiscountCode } from "@/lib/discounts/client"
 import { placeOrder } from "@/lib/orders/client"
 import { imageOrPlaceholder } from "@/lib/shop/images"
-import { formatPrice } from "@/lib/shop/pricing"
+import { computeTotals, formatPrice } from "@/lib/shop/pricing"
 import { checkoutCustomerSchema } from "@/lib/shop/types"
+import type { Discount } from "@/lib/shop/types"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/checkout")({
@@ -82,9 +84,31 @@ function renderField(
 function CheckoutPage() {
   const hydrated = useCartHydrated()
   const items = useCartItems()
-  const totals = useCartTotals()
   const { clear } = useCartActions()
   const navigate = useNavigate()
+
+  const [discount, setDiscount] = useState<Discount | null>(null)
+  const [codeInput, setCodeInput] = useState("")
+  const [applyingCode, setApplyingCode] = useState(false)
+  const totals = computeTotals(items, { discount: discount ?? undefined })
+
+  async function applyCode() {
+    const code = codeInput.trim()
+    if (!code) return
+    setApplyingCode(true)
+    try {
+      const applied = await validateDiscountCode(code, totals.subtotal)
+      setDiscount(applied)
+      setCodeInput("")
+      toast.success(`Applied ${applied.label}`)
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "That code isn't valid."
+      )
+    } finally {
+      setApplyingCode(false)
+    }
+  }
 
   const form = useForm({
     defaultValues: {
@@ -101,7 +125,11 @@ function CheckoutPage() {
     validators: { onChange: checkoutFormSchema },
     onSubmit: async ({ value }) => {
       try {
-        const order = await placeOrder({ items, customer: value })
+        const order = await placeOrder({
+          items,
+          customer: value,
+          discountCode: discount?.code,
+        })
         // Navigate first, then clear, so the cart-empty state never flashes.
         await navigate({
           to: "/orders/$orderId",
@@ -278,11 +306,57 @@ function CheckoutPage() {
 
           <Separator />
 
+          {discount ? (
+            <div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
+              <span>
+                <span className="font-medium">{discount.code}</span> ·{" "}
+                {discount.label}
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={() => setDiscount(null)}
+              >
+                Remove
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Input
+                value={codeInput}
+                onChange={(e) => setCodeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    void applyCode()
+                  }
+                }}
+                placeholder="Promo code"
+                aria-label="Promo code"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void applyCode()}
+                disabled={applyingCode || codeInput.trim() === ""}
+              >
+                Apply
+              </Button>
+            </div>
+          )}
+
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal</span>
               <span>{formatPrice(totals.subtotal)}</span>
             </div>
+            {totals.discountAmount > 0 ? (
+              <div className="flex justify-between text-primary">
+                <span>Discount{discount ? ` (${discount.code})` : ""}</span>
+                <span>−{formatPrice(totals.discountAmount)}</span>
+              </div>
+            ) : null}
             <div className="flex justify-between">
               <span className="text-muted-foreground">Shipping</span>
               <span>

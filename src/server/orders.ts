@@ -4,7 +4,8 @@ import { randomUUID } from "node:crypto"
 import { siteConfig } from "@/config/site"
 import { computeTotals } from "@/lib/shop/pricing"
 import { createOrderSchema, orderSchema } from "@/lib/shop/types"
-import type { CreateOrderInput, Order } from "@/lib/shop/types"
+import type { CreateOrderInput, Discount, Order } from "@/lib/shop/types"
+import { validateDiscount } from "./discounts"
 
 /**
  * Order store for the MVP.
@@ -49,8 +50,18 @@ function persist() {
 }
 
 export function createOrder(input: CreateOrderInput): Order {
-  const { items, customer } = createOrderSchema.parse(input)
-  const totals = computeTotals(items)
+  const { items, customer, discountCode } = createOrderSchema.parse(input)
+
+  // Re-validate the promo code server-side (never trust the client). An invalid
+  // code is silently dropped so the order still succeeds at the correct price.
+  let discount: Discount | undefined
+  if (discountCode) {
+    const subtotal = computeTotals(items).subtotal
+    const result = validateDiscount(discountCode, subtotal)
+    if (result.ok) discount = result.discount
+  }
+
+  const totals = computeTotals(items, { discount })
   const id = `EVG-${randomUUID().slice(0, 8).toUpperCase()}`
 
   // TODO(payments): create a Stripe PaymentIntent here and derive `status` from
@@ -60,6 +71,8 @@ export function createOrder(input: CreateOrderInput): Order {
     items,
     customer,
     subtotal: totals.subtotal,
+    discountCode: discount?.code,
+    discountAmount: totals.discountAmount,
     shipping: totals.shipping,
     tax: totals.tax,
     total: totals.total,
