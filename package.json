@@ -8,6 +8,7 @@
     "preview": "vite preview",
     "studio": "sanity dev",
     "studio:build": "sanity build",
+    "seed:sanity": "tsx scripts/seed-sanity.ts",
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx}\"",
@@ -59,6 +60,7 @@
     "prettier-plugin-tailwindcss": "^0.8.0",
     "sanity": "^6.1.0",
     "styled-components": "^6.4.2",
+    "tsx": "^4.22.4",
     "typescript": "^6",
     "vite": "^8",
     "vitest": "^4"
