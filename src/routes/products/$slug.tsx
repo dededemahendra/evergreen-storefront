@@ -4,6 +4,7 @@ import { ChevronRight, RotateCcw, Truck } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AddToCartForm } from "@/components/product/add-to-cart-form"
+import { ProductReviews } from "@/components/product/product-reviews"
 import { ProductRow } from "@/components/product/product-row"
 import { StarRating } from "@/components/product/star-rating"
 import { getFeaturedProducts, getProduct, getProducts } from "@/lib/shop/data"
@@ -188,6 +189,7 @@ function ProductPage() {
               : undefined
           }
         />
+        <ProductReviews product={product} />
         <ProductRow
           title="Popular this week"
           products={popular}
