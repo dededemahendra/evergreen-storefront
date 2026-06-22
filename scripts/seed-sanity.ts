@@ -45,14 +45,25 @@ const client = createClient({
   useCdn: false,
 })
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 async function uploadImage(url: string, label: string) {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Failed to fetch image ${url} (${res.status})`)
-  const buffer = Buffer.from(await res.arrayBuffer())
-  const asset = await client.assets.upload("image", buffer, {
-    filename: `${label}.jpg`,
-  })
-  return asset._id
+  let lastError: unknown
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    try {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`fetch ${url} -> ${res.status}`)
+      const buffer = Buffer.from(await res.arrayBuffer())
+      const asset = await client.assets.upload("image", buffer, {
+        filename: `${label}.jpg`,
+      })
+      return asset._id
+    } catch (error) {
+      lastError = error
+      await sleep(800 * attempt) // back off (picsum 522s under bulk load)
+    }
+  }
+  throw lastError
 }
 
 async function imageRefs(product: Product) {
