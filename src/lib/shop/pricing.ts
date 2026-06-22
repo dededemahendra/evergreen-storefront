@@ -53,22 +53,35 @@ export function computeTotals(
   items: CartItem[],
   opts: { discount?: Discount; giftCardBalance?: number } = {}
 ): OrderTotals {
-  const subtotal = roundMoney(
-    items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const lineTotal = (item: CartItem) => item.price * item.quantity
+  const subtotal = roundMoney(items.reduce((sum, i) => sum + lineTotal(i), 0))
+
+  // Gift cards are exempt from discounts, tax, and shipping — they pass through
+  // to the total at face value. Everything else is based on the physical
+  // (non-gift-card) subtotal.
+  const physicalSubtotal = roundMoney(
+    items
+      .filter((i) => i.kind !== "gift_card")
+      .reduce((sum, i) => sum + lineTotal(i), 0)
   )
+  const giftCardSubtotal = roundMoney(subtotal - physicalSubtotal)
+  const hasPhysical = physicalSubtotal > 0
+
   const discount = opts.discount
-  const discountAmt = discountAmount(discount, subtotal)
-  const discountedSubtotal = roundMoney(subtotal - discountAmt)
+  const discountAmt = discountAmount(discount, physicalSubtotal)
+  const discountedPhysical = roundMoney(physicalSubtotal - discountAmt)
   const qualifiesFreeShipping =
+    !hasPhysical ||
     discount?.kind === "free_shipping" ||
-    discountedSubtotal === 0 ||
-    discountedSubtotal >= FREE_SHIPPING_THRESHOLD
+    discountedPhysical >= FREE_SHIPPING_THRESHOLD
   const shipping = qualifiesFreeShipping ? 0 : SHIPPING_FLAT
-  const tax = roundMoney(discountedSubtotal * TAX_RATE)
-  const total = roundMoney(discountedSubtotal + shipping + tax)
+  const tax = roundMoney(discountedPhysical * TAX_RATE)
+  const total = roundMoney(
+    discountedPhysical + giftCardSubtotal + shipping + tax
+  )
   const amountToFreeShipping = qualifiesFreeShipping
     ? 0
-    : roundMoney(FREE_SHIPPING_THRESHOLD - discountedSubtotal)
+    : roundMoney(FREE_SHIPPING_THRESHOLD - discountedPhysical)
 
   const giftCardApplied =
     opts.giftCardBalance != null
