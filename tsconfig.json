@@ -11,6 +11,7 @@
     ".output",
     ".nitro",
     "dist",
+    "scripts",
     "sanity",
     "sanity.config.ts",
     "sanity.cli.ts"

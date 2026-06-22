@@ -85,16 +85,25 @@ sanity.config.ts          Studio config
 
 ## Connecting Sanity (optional)
 
-1. Create a Sanity project: `pnpm dlx sanity@latest init` (or use an existing one).
+The storefront runs on seed data until a Sanity project is configured; once
+`VITE_SANITY_PROJECT_ID` is set, the data layer reads live content instead.
+
+1. Create a Sanity project (`pnpm dlx sanity@latest init`) or use an existing one.
 2. Copy `.env.example` to `.env` and fill in:
    ```
    VITE_SANITY_PROJECT_ID=your_project_id
    VITE_SANITY_DATASET=production
    SANITY_STUDIO_PROJECT_ID=your_project_id
    SANITY_STUDIO_DATASET=production
+   SANITY_API_WRITE_TOKEN=sk... # Editor token (manage.sanity.io → API → Tokens), seeding only
    ```
-3. Run the Studio with `pnpm studio` and add products/categories using the schemas in `sanity/schemaTypes/`.
-4. Restart `pnpm dev` — the storefront now reads live content from Sanity.
+3. **Seed the catalog** into Sanity (uploads images as assets, idempotent):
+   ```
+   pnpm seed:sanity
+   ```
+   Or manage content by hand in the Studio: `pnpm studio` (schemas in `sanity/schemaTypes/`).
+4. Restart `pnpm dev` — the storefront now reads live content from Sanity. The
+   `SANITY_API_WRITE_TOKEN` is only needed for seeding, never at runtime.
 
 ## Deployment
 

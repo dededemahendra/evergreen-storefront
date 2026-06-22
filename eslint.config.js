@@ -20,6 +20,7 @@ export default [
     ignores: [
       "eslint.config.js",
       ".prettierrc",
+      "scripts/**",
       "sanity/**",
       "sanity.config.ts",
       "sanity.cli.ts",

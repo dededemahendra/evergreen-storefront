@@ -1,6 +1,6 @@
 import groq from "groq"
 import { z } from "zod"
-import { categorySchema, productSchema } from "./types"
+import { categorySchema, productKindSchema, productSchema } from "./types"
 import type { Category, Product } from "./types"
 
 /**
@@ -28,6 +28,7 @@ const PRODUCT_PROJECTION = groq`{
   featured,
   rating,
   reviewCount,
+  kind,
   options[]{ name, values },
   variants[]{
     "id": coalesce(sku, _key),
@@ -86,13 +87,14 @@ const rawProductSchema = z
     price: z.number(),
     compareAtPrice: z.number().nullish(),
     currency: z.string().nullish(),
-    images: z.array(z.string()).nullish(),
+    images: z.array(z.string().nullable()).nullish(),
     categorySlug: z.string().nullish(),
     categoryTitle: z.string().nullish(),
     tags: z.array(z.string()).nullish(),
     featured: z.boolean().nullish(),
     rating: z.number().nullish(),
     reviewCount: z.number().nullish(),
+    kind: productKindSchema.nullish(),
     options: z
       .array(z.object({ name: z.string(), values: z.array(z.string()) }))
       .nullish(),
@@ -107,13 +109,14 @@ const rawProductSchema = z
     price: d.price,
     compareAtPrice: d.compareAtPrice ?? undefined,
     currency: d.currency ?? "USD",
-    images: (d.images ?? []).filter(Boolean),
+    images: (d.images ?? []).filter((u): u is string => Boolean(u)),
     categorySlug: d.categorySlug ?? undefined,
     categoryTitle: d.categoryTitle ?? undefined,
     tags: d.tags ?? [],
     featured: d.featured ?? false,
     rating: d.rating ?? undefined,
     reviewCount: d.reviewCount ?? undefined,
+    kind: d.kind ?? undefined,
     options: d.options ?? [],
     variants: d.variants,
   }))

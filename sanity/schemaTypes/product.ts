@@ -17,6 +17,21 @@ export const product = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: "kind",
+      title: "Product kind",
+      type: "string",
+      options: {
+        list: [
+          { title: "Standard", value: "standard" },
+          { title: "Gift card", value: "gift_card" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "standard",
+      description:
+        "Gift cards are exempt from tax/shipping and issue a redeemable code on purchase.",
+    }),
+    defineField({
       name: "description",
       title: "Short description",
       type: "text",
