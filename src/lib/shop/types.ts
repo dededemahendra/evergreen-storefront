@@ -37,6 +37,9 @@ export const categorySchema = z.object({
 })
 export type Category = z.infer<typeof categorySchema>
 
+export const productKindSchema = z.enum(["standard", "gift_card"])
+export type ProductKind = z.infer<typeof productKindSchema>
+
 export const productSchema = z.object({
   id: z.string(),
   slug: z.string(),
@@ -59,6 +62,7 @@ export const productSchema = z.object({
   reviewCount: z.number().int().nonnegative().optional(),
   options: z.array(productOptionSchema).default([]),
   variants: z.array(productVariantSchema).min(1),
+  kind: productKindSchema.optional(),
 })
 export type Product = z.infer<typeof productSchema>
 
@@ -72,6 +76,7 @@ export const cartItemSchema = z.object({
   price: z.number().nonnegative(),
   image: z.string().optional(),
   quantity: z.number().int().positive(),
+  kind: productKindSchema.optional(),
 })
 export type CartItem = z.infer<typeof cartItemSchema>
 
@@ -105,6 +110,7 @@ export const createOrderSchema = z.object({
   items: z.array(cartItemSchema).min(1, "Cart is empty"),
   customer: checkoutCustomerSchema,
   discountCode: z.string().optional(),
+  giftCardCode: z.string().optional(),
 })
 export type CreateOrderInput = z.infer<typeof createOrderSchema>
 
@@ -115,6 +121,13 @@ export const orderStatusSchema = z.enum([
   "cancelled",
 ])
 export type OrderStatus = z.infer<typeof orderStatusSchema>
+
+/** A gift card issued by an order (shown on the confirmation page). */
+export const issuedGiftCardSchema = z.object({
+  code: z.string(),
+  balance: z.number(),
+})
+export type IssuedGiftCard = z.infer<typeof issuedGiftCardSchema>
 
 export const orderSchema = z.object({
   id: z.string(),
@@ -129,5 +142,9 @@ export const orderSchema = z.object({
   createdAt: z.string(),
   discountCode: z.string().optional(),
   discountAmount: z.number().default(0),
+  giftCardCode: z.string().optional(),
+  giftCardApplied: z.number().default(0),
+  amountDue: z.number().optional(),
+  issuedGiftCards: z.array(issuedGiftCardSchema).optional(),
 })
 export type Order = z.infer<typeof orderSchema>

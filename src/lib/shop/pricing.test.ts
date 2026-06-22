@@ -77,4 +77,23 @@ describe("computeTotals", () => {
     expect(t.tax).toBe(4.8)
     expect(t.total).toBe(64.8)
   })
+
+  it("applies a gift card against the total and sets amount due", () => {
+    const t = computeTotals([item(50)], { giftCardBalance: 30 })
+    expect(t.total).toBe(63) // 50 + 9 shipping + 4 tax
+    expect(t.giftCardApplied).toBe(30)
+    expect(t.amountDue).toBe(33)
+  })
+
+  it("caps the gift card at the total", () => {
+    const t = computeTotals([item(50)], { giftCardBalance: 1000 })
+    expect(t.giftCardApplied).toBe(t.total)
+    expect(t.amountDue).toBe(0)
+  })
+
+  it("amount due equals total when no gift card", () => {
+    const t = computeTotals([item(50)])
+    expect(t.giftCardApplied).toBe(0)
+    expect(t.amountDue).toBe(t.total)
+  })
 })

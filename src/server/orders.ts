@@ -4,8 +4,14 @@ import { randomUUID } from "node:crypto"
 import { siteConfig } from "@/config/site"
 import { computeTotals } from "@/lib/shop/pricing"
 import { createOrderSchema, orderSchema } from "@/lib/shop/types"
-import type { CreateOrderInput, Discount, Order } from "@/lib/shop/types"
+import type {
+  CreateOrderInput,
+  Discount,
+  IssuedGiftCard,
+  Order,
+} from "@/lib/shop/types"
 import { validateDiscount } from "./discounts"
+import { getGiftCard, issueGiftCard, redeemGiftCard } from "./giftcards"
 
 /**
  * Order store for the MVP.
@@ -50,7 +56,8 @@ function persist() {
 }
 
 export function createOrder(input: CreateOrderInput): Order {
-  const { items, customer, discountCode } = createOrderSchema.parse(input)
+  const { items, customer, discountCode, giftCardCode } =
+    createOrderSchema.parse(input)
 
   // Re-validate the promo code server-side (never trust the client). An invalid
   // code is silently dropped so the order still succeeds at the correct price.
@@ -61,7 +68,35 @@ export function createOrder(input: CreateOrderInput): Order {
     if (result.ok) discount = result.discount
   }
 
-  const totals = computeTotals(items, { discount })
+  // Re-check the gift card balance server-side before applying it.
+  let giftCardBalance: number | undefined
+  let appliedGiftCardCode: string | undefined
+  if (giftCardCode) {
+    const card = getGiftCard(giftCardCode)
+    if (card && card.balance > 0) {
+      giftCardBalance = card.balance
+      appliedGiftCardCode = card.code
+    }
+  }
+
+  const totals = computeTotals(items, { discount, giftCardBalance })
+
+  // Redeem the gift card for what was actually applied (decrements its balance).
+  if (appliedGiftCardCode && totals.giftCardApplied > 0) {
+    redeemGiftCard(appliedGiftCardCode, totals.giftCardApplied)
+  }
+
+  // Issue a gift card per gift-card line unit purchased in this order.
+  const issuedGiftCards: IssuedGiftCard[] = []
+  for (const item of items) {
+    if (item.kind === "gift_card") {
+      for (let i = 0; i < item.quantity; i++) {
+        const issued = issueGiftCard(item.price)
+        issuedGiftCards.push({ code: issued.code, balance: issued.balance })
+      }
+    }
+  }
+
   const id = `EVG-${randomUUID().slice(0, 8).toUpperCase()}`
 
   // TODO(payments): create a Stripe PaymentIntent here and derive `status` from
@@ -76,6 +111,10 @@ export function createOrder(input: CreateOrderInput): Order {
     shipping: totals.shipping,
     tax: totals.tax,
     total: totals.total,
+    giftCardCode: totals.giftCardApplied > 0 ? appliedGiftCardCode : undefined,
+    giftCardApplied: totals.giftCardApplied,
+    amountDue: totals.amountDue,
+    issuedGiftCards: issuedGiftCards.length > 0 ? issuedGiftCards : undefined,
     currency: siteConfig.currency,
     status: "paid",
     createdAt: new Date().toISOString(),

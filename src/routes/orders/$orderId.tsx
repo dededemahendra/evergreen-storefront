@@ -138,8 +138,51 @@ function OrderPage() {
               <span>Total</span>
               <span>{formatPrice(order.total)}</span>
             </div>
+            {order.giftCardApplied > 0 ? (
+              <>
+                <div className="flex justify-between text-primary">
+                  <span>
+                    Gift card
+                    {order.giftCardCode ? ` (${order.giftCardCode})` : ""}
+                  </span>
+                  <span>−{formatPrice(order.giftCardApplied)}</span>
+                </div>
+                <div className="flex justify-between text-base font-semibold">
+                  <span>Amount paid</span>
+                  <span>{formatPrice(order.amountDue ?? order.total)}</span>
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
+
+        {order.issuedGiftCards && order.issuedGiftCards.length > 0 ? (
+          <div className="mt-6 rounded-xl border bg-primary/5 p-6">
+            <h2 className="font-medium">
+              Your gift card{order.issuedGiftCards.length > 1 ? "s" : ""}
+            </h2>
+            <p className="mb-3 text-sm text-muted-foreground">
+              Keep{" "}
+              {order.issuedGiftCards.length > 1 ? "these codes" : "this code"}{" "}
+              safe — redeem at checkout.
+            </p>
+            <ul className="space-y-2">
+              {order.issuedGiftCards.map((card) => (
+                <li
+                  key={card.code}
+                  className="flex items-center justify-between rounded-md border bg-background px-3 py-2"
+                >
+                  <span className="font-mono text-sm font-medium">
+                    {card.code}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {formatPrice(card.balance)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-8 flex justify-center">

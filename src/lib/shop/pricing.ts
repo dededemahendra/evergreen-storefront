@@ -26,6 +26,10 @@ export interface OrderTotals {
   shipping: number
   tax: number
   total: number
+  /** Gift-card balance applied against the total (0 if none). */
+  giftCardApplied: number
+  /** What the customer actually pays: total − giftCardApplied. */
+  amountDue: number
   /** Amount still needed to unlock free shipping (0 once unlocked). */
   amountToFreeShipping: number
 }
@@ -47,7 +51,7 @@ export function discountAmount(
 
 export function computeTotals(
   items: CartItem[],
-  opts: { discount?: Discount } = {}
+  opts: { discount?: Discount; giftCardBalance?: number } = {}
 ): OrderTotals {
   const subtotal = roundMoney(
     items.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -66,12 +70,20 @@ export function computeTotals(
     ? 0
     : roundMoney(FREE_SHIPPING_THRESHOLD - discountedSubtotal)
 
+  const giftCardApplied =
+    opts.giftCardBalance != null
+      ? Math.min(roundMoney(opts.giftCardBalance), total)
+      : 0
+  const amountDue = roundMoney(total - giftCardApplied)
+
   return {
     subtotal,
     discountAmount: discountAmt,
     shipping,
     tax,
     total,
+    giftCardApplied,
+    amountDue,
     amountToFreeShipping,
   }
 }

@@ -57,11 +57,13 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
       </Link>
 
-      <WishlistButton
-        productId={product.id}
-        title={product.title}
-        className="absolute top-2 right-2 size-8"
-      />
+      {product.kind !== "gift_card" ? (
+        <WishlistButton
+          productId={product.id}
+          title={product.title}
+          className="absolute top-2 right-2 size-8"
+        />
+      ) : null}
     </div>
   )
 }

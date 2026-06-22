@@ -43,6 +43,7 @@ export function AddToCartForm({ product }: { product: Product }) {
         variantTitle: variant.title,
         price: variant.price,
         image: product.images[0],
+        kind: product.kind,
       },
       quantity
     )
