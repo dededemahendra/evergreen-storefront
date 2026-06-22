@@ -16,6 +16,8 @@ import {
   useCartItems,
 } from "@/lib/cart/store"
 import { validateDiscountCode } from "@/lib/discounts/client"
+import { checkGiftCard } from "@/lib/giftcards/client"
+import type { GiftCardInfo } from "@/lib/giftcards/client"
 import { placeOrder } from "@/lib/orders/client"
 import { imageOrPlaceholder } from "@/lib/shop/images"
 import { computeTotals, formatPrice } from "@/lib/shop/pricing"
@@ -81,6 +83,23 @@ function renderField(
   )
 }
 
+function AppliedCode({
+  label,
+  onRemove,
+}: {
+  label: string
+  onRemove: () => void
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md bg-muted px-3 py-2 text-sm">
+      <span className="truncate">{label}</span>
+      <Button type="button" variant="ghost" size="xs" onClick={onRemove}>
+        Remove
+      </Button>
+    </div>
+  )
+}
+
 function CheckoutPage() {
   const hydrated = useCartHydrated()
   const items = useCartItems()
@@ -88,23 +107,41 @@ function CheckoutPage() {
   const navigate = useNavigate()
 
   const [discount, setDiscount] = useState<Discount | null>(null)
+  const [giftCard, setGiftCard] = useState<GiftCardInfo | null>(null)
   const [codeInput, setCodeInput] = useState("")
   const [applyingCode, setApplyingCode] = useState(false)
-  const totals = computeTotals(items, { discount: discount ?? undefined })
+  const totals = computeTotals(items, {
+    discount: discount ?? undefined,
+    giftCardBalance: giftCard?.balance,
+  })
 
+  // One field accepts either a promo code or a gift card code (tries promo
+  // first). A promo and a gift card can both be applied.
   async function applyCode() {
     const code = codeInput.trim()
     if (!code) return
     setApplyingCode(true)
     try {
-      const applied = await validateDiscountCode(code, totals.subtotal)
-      setDiscount(applied)
+      let promo: Discount | null = null
+      try {
+        promo = await validateDiscountCode(code, totals.subtotal)
+      } catch {
+        promo = null
+      }
+      if (promo) {
+        setDiscount(promo)
+        setCodeInput("")
+        toast.success(`Applied ${promo.label}`)
+        return
+      }
+      const card = await checkGiftCard(code)
+      setGiftCard(card)
       setCodeInput("")
-      toast.success(`Applied ${applied.label}`)
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "That code isn't valid."
+      toast.success(
+        `Gift card applied — ${formatPrice(card.balance)} available`
       )
+    } catch {
+      toast.error("That code isn't valid.")
     } finally {
       setApplyingCode(false)
     }
@@ -129,6 +166,7 @@ function CheckoutPage() {
           items,
           customer: value,
           discountCode: discount?.code,
+          giftCardCode: giftCard?.code,
         })
         // Navigate first, then clear, so the cart-empty state never flashes.
         await navigate({
@@ -306,22 +344,19 @@ function CheckoutPage() {
 
           <Separator />
 
-          {discount ? (
-            <div className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
-              <span>
-                <span className="font-medium">{discount.code}</span> ·{" "}
-                {discount.label}
-              </span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                onClick={() => setDiscount(null)}
-              >
-                Remove
-              </Button>
-            </div>
-          ) : (
+          <div className="space-y-2">
+            {discount ? (
+              <AppliedCode
+                label={`${discount.code} · ${discount.label}`}
+                onRemove={() => setDiscount(null)}
+              />
+            ) : null}
+            {giftCard ? (
+              <AppliedCode
+                label={`Gift card ${giftCard.code} · ${formatPrice(giftCard.balance)}`}
+                onRemove={() => setGiftCard(null)}
+              />
+            ) : null}
             <div className="flex gap-2">
               <Input
                 value={codeInput}
@@ -332,8 +367,8 @@ function CheckoutPage() {
                     void applyCode()
                   }
                 }}
-                placeholder="Promo code"
-                aria-label="Promo code"
+                placeholder="Promo or gift card code"
+                aria-label="Promo or gift card code"
               />
               <Button
                 type="button"
@@ -344,7 +379,7 @@ function CheckoutPage() {
                 Apply
               </Button>
             </div>
-          )}
+          </div>
 
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -372,6 +407,18 @@ function CheckoutPage() {
               <span>Total</span>
               <span>{formatPrice(totals.total)}</span>
             </div>
+            {totals.giftCardApplied > 0 ? (
+              <>
+                <div className="flex justify-between text-primary">
+                  <span>Gift card{giftCard ? ` (${giftCard.code})` : ""}</span>
+                  <span>−{formatPrice(totals.giftCardApplied)}</span>
+                </div>
+                <div className="flex justify-between text-base font-semibold">
+                  <span>Amount due</span>
+                  <span>{formatPrice(totals.amountDue)}</span>
+                </div>
+              </>
+            ) : null}
           </div>
 
           <form.Subscribe selector={(s) => [s.isSubmitting] as const}>
@@ -384,7 +431,7 @@ function CheckoutPage() {
               >
                 {isSubmitting
                   ? "Placing order…"
-                  : `Pay ${formatPrice(totals.total)}`}
+                  : `Pay ${formatPrice(totals.amountDue)}`}
               </Button>
             )}
           </form.Subscribe>

@@ -318,4 +318,26 @@ export const seedProducts: Product[] = [
       variant("wallet-black", "Black", 72, { Color: "Black" }),
     ],
   },
+  {
+    id: "p-gift-card",
+    slug: "evergreen-gift-card",
+    title: "Evergreen Gift Card",
+    description: "The perfect gift — delivered instantly as a code.",
+    details:
+      "Choose an amount and we'll generate a unique gift card code at checkout, shown on your order confirmation. Redeemable against any future order until the balance runs out.",
+    price: 25,
+    currency: "USD",
+    images: [img("giftcard", 1)],
+    categorySlug: "accessories",
+    categoryTitle: "Accessories",
+    tags: ["gift"],
+    featured: false,
+    options: [{ name: "Amount", values: ["$25", "$50", "$100"] }],
+    variants: [
+      variant("gc-25", "$25", 25, { Amount: "$25" }, 9999),
+      variant("gc-50", "$50", 50, { Amount: "$50" }, 9999),
+      variant("gc-100", "$100", 100, { Amount: "$100" }, 9999),
+    ],
+    kind: "gift_card",
+  },
 ]

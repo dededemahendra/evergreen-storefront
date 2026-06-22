@@ -2,6 +2,7 @@ import { Hono } from "hono"
 import { z } from "zod"
 import { createOrderSchema } from "@/lib/shop/types"
 import { validateDiscount } from "./discounts"
+import { getGiftCard } from "./giftcards"
 import { createOrder, getOrder } from "./orders"
 
 /**
@@ -27,6 +28,14 @@ api.post("/discounts/validate", async (c) => {
   const result = validateDiscount(parsed.data.code, parsed.data.subtotal)
   if (!result.ok) return c.json({ error: result.reason }, 400)
   return c.json({ discount: result.discount })
+})
+
+api.get("/giftcards/:code", (c) => {
+  const card = getGiftCard(c.req.param("code"))
+  if (!card || card.balance <= 0) {
+    return c.json({ error: "That gift card code isn't valid." }, 404)
+  }
+  return c.json({ code: card.code, balance: card.balance })
 })
 
 api.post("/orders", async (c) => {
