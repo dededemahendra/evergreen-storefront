@@ -30,7 +30,13 @@ export const Route = createFileRoute("/products/$slug")({
 })
 
 /** Keyed per product so `activeImage` resets when navigating between products. */
-function ProductGallery({ images, title }: { images: string[]; title: string }) {
+function ProductGallery({
+  images,
+  title,
+}: {
+  images: string[]
+  title: string
+}) {
   const [activeImage, setActiveImage] = useState(0)
 
   return (
@@ -53,7 +59,7 @@ function ProductGallery({ images, title }: { images: string[]; title: string }) 
                 "size-20 overflow-hidden rounded-lg ring-1 transition",
                 i === activeImage
                   ? "ring-2 ring-primary"
-                  : "ring-foreground/10 hover:ring-foreground/30",
+                  : "ring-foreground/10 hover:ring-foreground/30"
               )}
               aria-label={`View image ${i + 1}`}
             >

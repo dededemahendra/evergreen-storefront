@@ -44,7 +44,7 @@ export function CartSheet() {
         >
           <ShoppingBag />
           {hydrated && count > 0 ? (
-            <Badge className="absolute -right-1 -top-1 size-4 justify-center rounded-full px-0 text-[10px] tabular-nums">
+            <Badge className="absolute -top-1 -right-1 size-4 justify-center rounded-full px-0 text-[10px] tabular-nums">
               {count}
             </Badge>
           ) : null}
@@ -97,7 +97,7 @@ export function CartSheet() {
                     <div className="flex flex-1 flex-col">
                       <div className="flex justify-between gap-2">
                         <div>
-                          <p className="text-sm font-medium leading-tight">
+                          <p className="text-sm leading-tight font-medium">
                             {item.title}
                           </p>
                           {item.variantTitle !== "Default" ? (
@@ -140,7 +140,9 @@ export function CartSheet() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
                   <span>
-                    {totals.shipping === 0 ? "Free" : formatPrice(totals.shipping)}
+                    {totals.shipping === 0
+                      ? "Free"
+                      : formatPrice(totals.shipping)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -164,7 +166,10 @@ export function CartSheet() {
               <SheetClose asChild>
                 <Link
                   to="/cart"
-                  className={cn(buttonVariants({ variant: "outline" }), "w-full")}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "w-full"
+                  )}
                 >
                   View cart
                 </Link>

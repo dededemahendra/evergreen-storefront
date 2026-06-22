@@ -115,7 +115,9 @@ function CartPage() {
             <SummaryRow label="Subtotal" value={formatPrice(totals.subtotal)} />
             <SummaryRow
               label="Shipping"
-              value={totals.shipping === 0 ? "Free" : formatPrice(totals.shipping)}
+              value={
+                totals.shipping === 0 ? "Free" : formatPrice(totals.shipping)
+              }
             />
             <SummaryRow label="Tax" value={formatPrice(totals.tax)} />
             <Separator />
@@ -149,7 +151,9 @@ function EmptyCart() {
   return (
     <div className="container mx-auto flex flex-col items-center gap-4 px-4 py-24 text-center">
       <ShoppingBag className="size-12 text-muted-foreground/40" />
-      <h1 className="font-heading text-2xl font-semibold">Your cart is empty</h1>
+      <h1 className="font-heading text-2xl font-semibold">
+        Your cart is empty
+      </h1>
       <p className="max-w-sm text-muted-foreground">
         Looks like you haven't added anything yet. Let's fix that.
       </p>

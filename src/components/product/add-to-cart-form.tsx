@@ -44,7 +44,7 @@ export function AddToCartForm({ product }: { product: Product }) {
         price: variant.price,
         image: product.images[0],
       },
-      quantity,
+      quantity
     )
     toast.success(`Added ${product.title} to your cart.`)
     setQuantity(1)
@@ -71,7 +71,11 @@ export function AddToCartForm({ product }: { product: Product }) {
             className="flex-wrap"
           >
             {option.values.map((value) => (
-              <ToggleGroupItem key={value} value={value} className="min-w-11 px-3">
+              <ToggleGroupItem
+                key={value}
+                value={value}
+                className="min-w-11 px-3"
+              >
                 {value}
               </ToggleGroupItem>
             ))}

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { useForm, type AnyFieldApi } from "@tanstack/react-form"
+import { useForm } from "@tanstack/react-form"
+import type { AnyFieldApi } from "@tanstack/react-form"
 import { z } from "zod"
 import { toast } from "sonner"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -37,12 +38,16 @@ function FieldError({ field }: { field: AnyFieldApi }) {
   if (!isInvalid(field)) return null
   const messages = field.state.meta.errors
     .map((e: unknown) =>
-      typeof e === "string" ? e : (e as { message?: string })?.message,
+      typeof e === "string" ? e : (e as { message?: string }).message
     )
     .filter(Boolean)
   if (messages.length === 0) return null
   return (
-    <p id={`${field.name}-error`} role="alert" className="text-xs text-destructive">
+    <p
+      id={`${field.name}-error`}
+      role="alert"
+      className="text-xs text-destructive"
+    >
       {messages.join(", ")}
     </p>
   )
@@ -54,7 +59,7 @@ function FieldError({ field }: { field: AnyFieldApi }) {
 function renderField(
   field: AnyFieldApi,
   label: string,
-  inputProps: React.ComponentProps<typeof Input> = {},
+  inputProps: React.ComponentProps<typeof Input> = {}
 ) {
   const invalid = isInvalid(field)
   return (
@@ -108,7 +113,7 @@ function CheckoutPage() {
         toast.error(
           error instanceof Error
             ? error.message
-            : "We couldn't place your order. Please try again.",
+            : "We couldn't place your order. Please try again."
         )
       }
     },
@@ -252,12 +257,12 @@ function CheckoutPage() {
                     alt={item.title}
                     className="size-full object-cover"
                   />
-                  <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                  <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
                     {item.quantity}
                   </span>
                 </div>
                 <div className="flex-1 text-sm">
-                  <p className="font-medium leading-tight">{item.title}</p>
+                  <p className="leading-tight font-medium">{item.title}</p>
                   {item.variantTitle !== "Default" ? (
                     <p className="text-xs text-muted-foreground">
                       {item.variantTitle}

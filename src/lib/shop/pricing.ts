@@ -31,7 +31,7 @@ export interface OrderTotals {
 
 export function computeTotals(items: CartItem[]): OrderTotals {
   const subtotal = roundMoney(
-    items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   )
   const shipping =
     subtotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT
@@ -47,7 +47,7 @@ export function computeTotals(items: CartItem[]): OrderTotals {
 
 export function formatPrice(
   amount: number,
-  currency: string = siteConfig.currency,
+  currency: string = siteConfig.currency
 ): string {
   return new Intl.NumberFormat(siteConfig.locale, {
     style: "currency",

@@ -30,7 +30,7 @@ export const getProducts = createServerFn({ method: "GET" })
     if (sanityClient) {
       const docs = await sanityClient.fetch<unknown[]>(
         category ? productsByCategoryQuery : productsQuery,
-        category ? { category } : {},
+        category ? { category } : {}
       )
       return docs.map(mapSanityProduct)
     }
@@ -46,14 +46,16 @@ export const getFeaturedProducts = createServerFn({ method: "GET" }).handler(
       return docs.map(mapSanityProduct)
     }
     return seedProducts.filter((p) => p.featured)
-  },
+  }
 )
 
 export const getProduct = createServerFn({ method: "GET" })
   .validator(z.string())
   .handler(async ({ data: slug }): Promise<Product | null> => {
     if (sanityClient) {
-      const doc = await sanityClient.fetch<unknown>(productBySlugQuery, { slug })
+      const doc = await sanityClient.fetch<unknown>(productBySlugQuery, {
+        slug,
+      })
       return doc ? mapSanityProduct(doc) : null
     }
     return seedProducts.find((p) => p.slug === slug) ?? null
@@ -66,5 +68,5 @@ export const getCategories = createServerFn({ method: "GET" }).handler(
       return docs.map(mapSanityCategory)
     }
     return seedCategories
-  },
+  }
 )

@@ -20,7 +20,9 @@ export function QuantityStepper({
   const buttonSize = size === "sm" ? "icon-sm" : "icon"
 
   return (
-    <div className={cn("inline-flex items-center rounded-lg border", className)}>
+    <div
+      className={cn("inline-flex items-center rounded-lg border", className)}
+    >
       <Button
         type="button"
         variant="ghost"

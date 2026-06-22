@@ -8,12 +8,12 @@ export function getDefaultVariant(product: Product): ProductVariant {
 /** Find the variant matching a full option selection (e.g. { Size: "M" }). */
 export function findVariant(
   product: Product,
-  selection: Record<string, string>,
+  selection: Record<string, string>
 ): ProductVariant | undefined {
   return product.variants.find((variant) =>
     Object.entries(selection).every(
-      ([name, value]) => variant.options[name] === value,
-    ),
+      ([name, value]) => variant.options[name] === value
+    )
   )
 }
 
