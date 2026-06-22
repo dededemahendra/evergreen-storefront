@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as ProductsSlugRouteImport } from './routes/products/$slug'
 import { Route as OrdersOrderIdRouteImport } from './routes/orders/$orderId'
 import { Route as ApiSplatRouteImport } from './routes/api.$'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/wishlist': typeof WishlistRoute
   '/api/$': typeof ApiSplatRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/wishlist': typeof WishlistRoute
   '/api/$': typeof ApiSplatRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/wishlist': typeof WishlistRoute
   '/api/$': typeof ApiSplatRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/checkout'
+    | '/wishlist'
     | '/api/$'
     | '/orders/$orderId'
     | '/products/$slug'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/checkout'
+    | '/wishlist'
     | '/api/$'
     | '/orders/$orderId'
     | '/products/$slug'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/checkout'
+    | '/wishlist'
     | '/api/$'
     | '/orders/$orderId'
     | '/products/$slug'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
+  WishlistRoute: typeof WishlistRoute
   ApiSplatRoute: typeof ApiSplatRoute
   OrdersOrderIdRoute: typeof OrdersOrderIdRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
@@ -123,6 +136,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout': {
       id: '/checkout'
       path: '/checkout'
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
+  WishlistRoute: WishlistRoute,
   ApiSplatRoute: ApiSplatRoute,
   OrdersOrderIdRoute: OrdersOrderIdRoute,
   ProductsSlugRoute: ProductsSlugRoute,

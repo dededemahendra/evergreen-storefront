@@ -14,6 +14,7 @@ import { SiteFooter } from "@/components/layout/site-footer"
 import { Toaster } from "@/components/ui/sonner"
 import { buttonVariants } from "@/components/ui/button"
 import { rehydrateCart } from "@/lib/cart/store"
+import { rehydrateWishlist } from "@/lib/wishlist/store"
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
 
@@ -35,10 +36,11 @@ export const Route = createRootRoute({
 })
 
 function RootLayout() {
-  // Load the persisted cart from localStorage once, after the first paint, so
-  // server HTML and the first client render match (see lib/cart/store.ts).
+  // Load persisted cart + wishlist from localStorage once, after the first
+  // paint, so server HTML and the first client render match.
   useEffect(() => {
     rehydrateCart()
+    rehydrateWishlist()
   }, [])
 
   return (

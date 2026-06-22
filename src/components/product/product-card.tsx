@@ -5,54 +5,63 @@ import { imageOrPlaceholder } from "@/lib/shop/images"
 import { getPriceRange } from "@/lib/shop/variants"
 import type { Product } from "@/lib/shop/types"
 import { StarRating } from "./star-rating"
+import { WishlistButton } from "./wishlist-button"
 
 export function ProductCard({ product }: { product: Product }) {
   const { min, max } = getPriceRange(product)
   const onSale = product.compareAtPrice != null && product.compareAtPrice > min
 
   return (
-    <Link
-      to="/products/$slug"
-      params={{ slug: product.slug }}
-      className="group/card block overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition hover:ring-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-    >
-      <div className="relative aspect-square overflow-hidden bg-muted">
-        <img
-          src={imageOrPlaceholder(product.images[0])}
-          alt={product.title}
-          loading="lazy"
-          className="size-full object-cover transition duration-500 group-hover/card:scale-105"
-        />
-        {onSale ? (
-          <Badge variant="destructive" className="absolute top-2 left-2">
-            Sale
-          </Badge>
-        ) : product.featured ? (
-          <Badge className="absolute top-2 left-2">Featured</Badge>
-        ) : null}
-      </div>
-
-      <div className="space-y-1 p-3">
-        {product.categoryTitle ? (
-          <p className="text-xs text-muted-foreground">
-            {product.categoryTitle}
-          </p>
-        ) : null}
-        <h3 className="line-clamp-1 leading-snug font-medium">
-          {product.title}
-        </h3>
-        <StarRating rating={product.rating} count={product.reviewCount} />
-        <p className="flex items-baseline gap-2 pt-1 text-sm">
-          <span className="font-medium">
-            {min === max ? formatPrice(min) : `From ${formatPrice(min)}`}
-          </span>
+    <div className="group/card relative">
+      <Link
+        to="/products/$slug"
+        params={{ slug: product.slug }}
+        className="block overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition hover:ring-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        <div className="relative aspect-square overflow-hidden bg-muted">
+          <img
+            src={imageOrPlaceholder(product.images[0])}
+            alt={product.title}
+            loading="lazy"
+            className="size-full object-cover transition duration-500 group-hover/card:scale-105"
+          />
           {onSale ? (
-            <span className="text-muted-foreground line-through">
-              {formatPrice(product.compareAtPrice!)}
-            </span>
+            <Badge variant="destructive" className="absolute top-2 left-2">
+              Sale
+            </Badge>
+          ) : product.featured ? (
+            <Badge className="absolute top-2 left-2">Featured</Badge>
           ) : null}
-        </p>
-      </div>
-    </Link>
+        </div>
+
+        <div className="space-y-1 p-3">
+          {product.categoryTitle ? (
+            <p className="text-xs text-muted-foreground">
+              {product.categoryTitle}
+            </p>
+          ) : null}
+          <h3 className="line-clamp-1 leading-snug font-medium">
+            {product.title}
+          </h3>
+          <StarRating rating={product.rating} count={product.reviewCount} />
+          <p className="flex items-baseline gap-2 pt-1 text-sm">
+            <span className="font-medium">
+              {min === max ? formatPrice(min) : `From ${formatPrice(min)}`}
+            </span>
+            {onSale ? (
+              <span className="text-muted-foreground line-through">
+                {formatPrice(product.compareAtPrice!)}
+              </span>
+            ) : null}
+          </p>
+        </div>
+      </Link>
+
+      <WishlistButton
+        productId={product.id}
+        title={product.title}
+        className="absolute top-2 right-2 size-8"
+      />
+    </div>
   )
 }
