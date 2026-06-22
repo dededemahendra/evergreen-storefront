@@ -6,11 +6,33 @@ import type { Category, Product, ProductVariant } from "./types"
  * end-to-end out of the box. The same shapes are produced by the Sanity mappers
  * in `queries.ts`, so swapping to live content requires no UI changes.
  *
- * Images use deterministic picsum.photos seeds so they are stable across runs.
+ * Images use curated Unsplash photos (reliable CDN). Each product maps to one
+ * photo; multiple gallery images are different crops of the same photo.
  */
 
-const img = (seed: string, n = 1) =>
-  `https://picsum.photos/seed/${seed}-${n}/900/900`
+const UNSPLASH: Record<string, string> = {
+  alpine: "1551028719-00167b16eac5",
+  merino: "1576566588028-4147f3842f27",
+  fleece: "1620799140408-edc6dcb6d633",
+  daypack: "1553062407-98eeb64c6a62",
+  bottle: "1602143407151-7111542de6e8",
+  headlamp: "1504280390367-361c6d9f38f4",
+  mug: "1564540583246-934409427776",
+  candle: "1603006905003-be475563bc59",
+  blanket: "1584100936595-c0654b55a2e2",
+  beanie: "1576871337622-98d48d1cf531",
+  socks: "1586350977771-b3b0abd50c82",
+  wallet: "1627123424574-724758594e93",
+  giftcard: "1549465220-1a8b9238cd48",
+}
+
+const CROPS = ["entropy", "edges", "center"]
+
+const img = (seed: string, n = 1) => {
+  const id = UNSPLASH[seed] ?? UNSPLASH.alpine
+  const crop = CROPS[(n - 1) % CROPS.length]
+  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&crop=${crop}&w=900&h=900&q=70`
+}
 
 export const seedCategories: Category[] = [
   {
