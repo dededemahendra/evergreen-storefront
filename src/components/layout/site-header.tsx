@@ -1,10 +1,36 @@
 import { Link } from "@tanstack/react-router"
-import { Leaf } from "lucide-react"
+import { Heart, Leaf } from "lucide-react"
 import { CartSheet } from "@/components/cart/cart-sheet"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { useWishlistCount, useWishlistHydrated } from "@/lib/wishlist/store"
 import { siteConfig } from "@/config/site"
 
 const navLinkClass =
   "rounded-md px-2.5 py-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+
+function WishlistIndicator() {
+  const count = useWishlistCount()
+  const hydrated = useWishlistHydrated()
+  return (
+    <Button
+      asChild
+      variant="ghost"
+      size="icon"
+      className="relative"
+      aria-label={`Wishlist${hydrated && count > 0 ? `, ${count} items` : ""}`}
+    >
+      <Link to="/wishlist">
+        <Heart />
+        {hydrated && count > 0 ? (
+          <Badge className="absolute -top-1 -right-1 size-4 justify-center rounded-full px-0 text-[10px] tabular-nums">
+            {count}
+          </Badge>
+        ) : null}
+      </Link>
+    </Button>
+  )
+}
 
 export function SiteHeader() {
   return (
@@ -53,6 +79,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center">
+          <WishlistIndicator />
           <CartSheet />
         </div>
       </div>
