@@ -15,6 +15,14 @@ export default [
     },
   },
   {
-    ignores: ["eslint.config.js", ".prettierrc"],
+    // Sanity Studio is built by the Sanity CLI and excluded from the app
+    // tsconfig, so the type-aware ESLint parser can't (and shouldn't) lint it.
+    ignores: [
+      "eslint.config.js",
+      ".prettierrc",
+      "sanity/**",
+      "sanity.config.ts",
+      "sanity.cli.ts",
+    ],
   },
 ]

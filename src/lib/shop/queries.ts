@@ -61,7 +61,9 @@ const rawVariantSchema = z
     price: z.number(),
     sku: z.string().nullish(),
     inventory: z.number().nullish(),
-    options: z.array(z.object({ name: z.string(), value: z.string() })).nullish(),
+    options: z
+      .array(z.object({ name: z.string(), value: z.string() }))
+      .nullish(),
   })
   .transform((v) => ({
     id: v.id,
@@ -69,7 +71,9 @@ const rawVariantSchema = z
     price: v.price,
     sku: v.sku ?? undefined,
     inventory: v.inventory ?? 0,
-    options: Object.fromEntries((v.options ?? []).map((o) => [o.name, o.value])),
+    options: Object.fromEntries(
+      (v.options ?? []).map((o) => [o.name, o.value])
+    ),
   }))
 
 const rawProductSchema = z

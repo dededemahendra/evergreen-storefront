@@ -48,7 +48,7 @@ export const useCartStore = create<CartState>()(
               items: state.items.map((i) =>
                 lineKey(i) === key
                   ? { ...i, quantity: i.quantity + quantity }
-                  : i,
+                  : i
               ),
             }
           }
@@ -64,7 +64,7 @@ export const useCartStore = create<CartState>()(
             quantity <= 0
               ? state.items.filter((i) => lineKey(i) !== key)
               : state.items.map((i) =>
-                  lineKey(i) === key ? { ...i, quantity } : i,
+                  lineKey(i) === key ? { ...i, quantity } : i
                 ),
         })),
       clear: () => set({ items: [] }),
@@ -78,8 +78,8 @@ export const useCartStore = create<CartState>()(
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true)
       },
-    },
-  ),
+    }
+  )
 )
 
 /** Trigger a one-time rehydrate from localStorage. Safe to call on the client. */
@@ -101,7 +101,7 @@ export function useCartActions() {
       removeItem: s.removeItem,
       updateQuantity: s.updateQuantity,
       clear: s.clear,
-    })),
+    }))
   )
 }
 

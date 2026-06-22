@@ -55,7 +55,7 @@ function Home() {
                 search={{ category: "outdoor" }}
                 className={cn(
                   buttonVariants({ variant: "outline", size: "lg" }),
-                  "h-11",
+                  "h-11"
                 )}
               >
                 Explore outdoor

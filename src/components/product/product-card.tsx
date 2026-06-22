@@ -14,7 +14,7 @@ export function ProductCard({ product }: { product: Product }) {
     <Link
       to="/products/$slug"
       params={{ slug: product.slug }}
-      className="group/card block overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition hover:ring-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group/card block overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition hover:ring-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
       <div className="relative aspect-square overflow-hidden bg-muted">
         <img
@@ -24,19 +24,23 @@ export function ProductCard({ product }: { product: Product }) {
           className="size-full object-cover transition duration-500 group-hover/card:scale-105"
         />
         {onSale ? (
-          <Badge variant="destructive" className="absolute left-2 top-2">
+          <Badge variant="destructive" className="absolute top-2 left-2">
             Sale
           </Badge>
         ) : product.featured ? (
-          <Badge className="absolute left-2 top-2">Featured</Badge>
+          <Badge className="absolute top-2 left-2">Featured</Badge>
         ) : null}
       </div>
 
       <div className="space-y-1 p-3">
         {product.categoryTitle ? (
-          <p className="text-xs text-muted-foreground">{product.categoryTitle}</p>
+          <p className="text-xs text-muted-foreground">
+            {product.categoryTitle}
+          </p>
         ) : null}
-        <h3 className="line-clamp-1 font-medium leading-snug">{product.title}</h3>
+        <h3 className="line-clamp-1 leading-snug font-medium">
+          {product.title}
+        </h3>
         <StarRating rating={product.rating} count={product.reviewCount} />
         <p className="flex items-baseline gap-2 pt-1 text-sm">
           <span className="font-medium">

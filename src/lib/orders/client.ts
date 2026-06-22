@@ -1,5 +1,6 @@
 import { z } from "zod"
-import { orderSchema, type CreateOrderInput, type Order } from "@/lib/shop/types"
+import { orderSchema } from "@/lib/shop/types"
+import type { CreateOrderInput, Order } from "@/lib/shop/types"
 
 const orderResponseSchema = z.object({
   order: orderSchema.optional(),

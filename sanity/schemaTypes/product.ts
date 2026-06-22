@@ -29,7 +29,11 @@ export const product = defineType({
       type: "number",
       validation: (rule) => rule.required().min(0),
     }),
-    defineField({ name: "compareAtPrice", title: "Compare-at price", type: "number" }),
+    defineField({
+      name: "compareAtPrice",
+      title: "Compare-at price",
+      type: "number",
+    }),
     defineField({ name: "currency", type: "string", initialValue: "USD" }),
     defineField({
       name: "images",

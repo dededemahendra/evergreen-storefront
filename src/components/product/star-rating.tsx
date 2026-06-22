@@ -17,7 +17,7 @@ export function StarRating({
     <div
       className={cn(
         "flex items-center gap-1.5 text-xs text-muted-foreground",
-        className,
+        className
       )}
     >
       <div className="flex" aria-label={`Rated ${rating} out of 5`}>
@@ -28,7 +28,7 @@ export function StarRating({
               "size-3.5",
               i < rounded
                 ? "fill-amber-400 text-amber-400"
-                : "text-muted-foreground/30",
+                : "text-muted-foreground/30"
             )}
           />
         ))}

@@ -19,7 +19,7 @@ api.post("/orders", async (c) => {
   if (!parsed.success) {
     return c.json(
       { error: "Invalid order", issues: parsed.error.flatten() },
-      400,
+      400
     )
   }
   const order = createOrder(parsed.data)

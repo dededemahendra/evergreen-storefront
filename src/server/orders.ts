@@ -3,12 +3,8 @@ import { join } from "node:path"
 import { randomUUID } from "node:crypto"
 import { siteConfig } from "@/config/site"
 import { computeTotals } from "@/lib/shop/pricing"
-import {
-  createOrderSchema,
-  orderSchema,
-  type CreateOrderInput,
-  type Order,
-} from "@/lib/shop/types"
+import { createOrderSchema, orderSchema } from "@/lib/shop/types"
+import type { CreateOrderInput, Order } from "@/lib/shop/types"
 
 /**
  * Order store for the MVP.
@@ -43,7 +39,10 @@ const orders = loadOrders()
 function persist() {
   try {
     mkdirSync(DATA_DIR, { recursive: true })
-    writeFileSync(DATA_FILE, JSON.stringify(Object.fromEntries(orders), null, 2))
+    writeFileSync(
+      DATA_FILE,
+      JSON.stringify(Object.fromEntries(orders), null, 2)
+    )
   } catch {
     // Best-effort persistence; the in-memory copy is still authoritative.
   }

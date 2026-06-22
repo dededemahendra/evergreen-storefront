@@ -44,7 +44,7 @@ function variant(
   title: string,
   price: number,
   options: Record<string, string> = {},
-  inventory = 40,
+  inventory = 40
 ): ProductVariant {
   return { id, title, options, price, inventory, sku: id.toUpperCase() }
 }
@@ -52,7 +52,13 @@ function variant(
 /** Helper for the common "Size" matrix used by apparel items. */
 function sizeVariants(prefix: string, price: number): ProductVariant[] {
   return ["S", "M", "L", "XL"].map((size, i) =>
-    variant(`${prefix}-${size.toLowerCase()}`, size, price, { Size: size }, 30 - i * 4),
+    variant(
+      `${prefix}-${size.toLowerCase()}`,
+      size,
+      price,
+      { Size: size },
+      30 - i * 4
+    )
   )
 }
 

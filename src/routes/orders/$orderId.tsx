@@ -73,12 +73,12 @@ function OrderPage() {
                     alt={item.title}
                     className="size-full object-cover"
                   />
-                  <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                  <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
                     {item.quantity}
                   </span>
                 </div>
                 <div className="flex-1 text-sm">
-                  <p className="font-medium leading-tight">{item.title}</p>
+                  <p className="leading-tight font-medium">{item.title}</p>
                   {item.variantTitle !== "Default" ? (
                     <p className="text-xs text-muted-foreground">
                       {item.variantTitle}
@@ -135,7 +135,10 @@ function OrderPage() {
       </div>
 
       <div className="mt-8 flex justify-center">
-        <Link to="/products" className={cn(buttonVariants({ variant: "outline" }))}>
+        <Link
+          to="/products"
+          className={cn(buttonVariants({ variant: "outline" }))}
+        >
           Continue shopping
         </Link>
       </div>
