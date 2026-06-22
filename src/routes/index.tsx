@@ -23,6 +23,21 @@ const valueProps = [
   { icon: ShieldCheck, title: "Lifetime guarantee", body: "Built to last." },
 ]
 
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&h=900&q=70"
+
+const CATEGORY_IMAGE: Record<string, string> = {
+  apparel: "1551028719-00167b16eac5",
+  outdoor: "1553062407-98eeb64c6a62",
+  home: "1584100936595-c0654b55a2e2",
+  accessories: "1627123424574-724758594e93",
+}
+
+function categoryImage(slug: string): string {
+  const id = CATEGORY_IMAGE[slug] ?? CATEGORY_IMAGE.apparel
+  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=450&q=70`
+}
+
 function Home() {
   const { featured, categories } = Route.useLoaderData()
 
@@ -64,7 +79,7 @@ function Home() {
           </div>
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl ring-1 ring-foreground/10">
             <img
-              src="https://picsum.photos/seed/evergreen-hero/1200/900"
+              src={HERO_IMAGE}
               alt="Featured collection"
               className="size-full object-cover"
             />
@@ -83,7 +98,7 @@ function Home() {
               className="group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-xl p-4 ring-1 ring-foreground/10"
             >
               <img
-                src={`https://picsum.photos/seed/cat-${category.slug}/600/450`}
+                src={categoryImage(category.slug)}
                 alt={category.title}
                 className="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-105"
               />
