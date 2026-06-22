@@ -4,8 +4,9 @@ import { ChevronRight, RotateCcw, Truck } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AddToCartForm } from "@/components/product/add-to-cart-form"
+import { ProductRow } from "@/components/product/product-row"
 import { StarRating } from "@/components/product/star-rating"
-import { getProduct } from "@/lib/shop/data"
+import { getFeaturedProducts, getProduct, getProducts } from "@/lib/shop/data"
 import { imageOrPlaceholder } from "@/lib/shop/images"
 import { formatPrice } from "@/lib/shop/pricing"
 import { getPriceRange } from "@/lib/shop/variants"
@@ -15,7 +16,17 @@ export const Route = createFileRoute("/products/$slug")({
   loader: async ({ params }) => {
     const product = await getProduct({ data: params.slug })
     if (!product) throw notFound()
-    return { product }
+    const [categoryProducts, featured] = await Promise.all([
+      product.categorySlug
+        ? getProducts({ data: { category: product.categorySlug } })
+        : Promise.resolve([]),
+      getFeaturedProducts(),
+    ])
+    const related = categoryProducts
+      .filter((p) => p.id !== product.id)
+      .slice(0, 5)
+    const popular = featured.filter((p) => p.id !== product.id).slice(0, 5)
+    return { product, related, popular }
   },
   head: ({ loaderData }) =>
     loaderData
@@ -77,7 +88,7 @@ function ProductGallery({
 }
 
 function ProductPage() {
-  const { product } = Route.useLoaderData()
+  const { product, related, popular } = Route.useLoaderData()
   const { min, max } = getPriceRange(product)
   const onSale = product.compareAtPrice != null && product.compareAtPrice > min
 
@@ -165,6 +176,23 @@ function ProductPage() {
             </div>
           ) : null}
         </div>
+      </div>
+
+      <div className="mt-16 space-y-12">
+        <ProductRow
+          title="Related products"
+          products={related}
+          viewAllSearch={
+            product.categorySlug
+              ? { category: product.categorySlug }
+              : undefined
+          }
+        />
+        <ProductRow
+          title="Popular this week"
+          products={popular}
+          viewAllSearch={{}}
+        />
       </div>
     </div>
   )
