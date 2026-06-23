@@ -12,11 +12,11 @@ export function ProductCard({ product }: { product: Product }) {
   const onSale = product.compareAtPrice != null && product.compareAtPrice > min
 
   return (
-    <div className="group/card relative">
+    <div className="group/card relative h-full">
       <Link
         to="/products/$slug"
         params={{ slug: product.slug }}
-        className="block overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition hover:ring-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className="flex h-full flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition hover:ring-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
         <div className="relative aspect-square overflow-hidden bg-muted">
           <img
@@ -34,7 +34,7 @@ export function ProductCard({ product }: { product: Product }) {
           ) : null}
         </div>
 
-        <div className="space-y-1 p-3">
+        <div className="flex flex-1 flex-col gap-1 p-3">
           {product.categoryTitle ? (
             <p className="text-xs text-muted-foreground">
               {product.categoryTitle}
@@ -44,7 +44,7 @@ export function ProductCard({ product }: { product: Product }) {
             {product.title}
           </h3>
           <StarRating rating={product.rating} count={product.reviewCount} />
-          <p className="flex items-baseline gap-2 pt-1 text-sm">
+          <p className="mt-auto flex items-baseline gap-2 pt-1 text-sm">
             <span className="font-medium">
               {min === max ? formatPrice(min) : `From ${formatPrice(min)}`}
             </span>
