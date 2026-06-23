@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
+import { PackageSearch, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { CatalogToolbar } from "@/components/product/catalog-toolbar"
 import type { CatalogToolbarChange } from "@/components/product/catalog-toolbar"
 import { ProductGrid } from "@/components/product/product-grid"
@@ -10,6 +12,7 @@ import {
 } from "@/lib/shop/catalog"
 import type { ProductSort } from "@/lib/shop/catalog"
 import { getCategories, getProducts } from "@/lib/shop/data"
+import { formatPrice } from "@/lib/shop/pricing"
 import { cn } from "@/lib/utils"
 
 type ProductSearch = {
@@ -67,6 +70,12 @@ function ProductsPage() {
   })
   const activeCategory = categories.find((c) => c.slug === category)
 
+  const searchActive = Boolean(q?.trim())
+  const priceActive =
+    (minPrice ?? bounds.min) > bounds.min ||
+    (maxPrice ?? bounds.max) < bounds.max
+  const anyFilter = searchActive || priceActive
+
   function applyControls(partial: CatalogToolbarChange) {
     navigate({
       search: (prev) => {
@@ -84,9 +93,18 @@ function ProductsPage() {
     })
   }
 
+  function clearFilters() {
+    // Keep the chosen category; drop search, sort, and price.
+    navigate({
+      search: (prev) => ({ category: prev.category }),
+      replace: true,
+      resetScroll: false,
+    })
+  }
+
   return (
-    <div className="container mx-auto px-4 py-10">
-      <header className="mb-8 space-y-1">
+    <div className="container mx-auto px-4 py-8 md:py-10">
+      <header className="mb-6 space-y-1">
         <h1 className="font-heading text-3xl font-semibold">
           {activeCategory ? activeCategory.title : "All products"}
         </h1>
@@ -96,31 +114,106 @@ function ProductsPage() {
         </p>
       </header>
 
-      <CatalogToolbar
-        q={q ?? ""}
-        sort={sort ?? DEFAULT_SORT}
-        bounds={bounds}
-        minPrice={minPrice ?? bounds.min}
-        maxPrice={maxPrice ?? bounds.max}
-        onChange={applyControls}
-      />
-
-      {/* Category filter (preserves search + sort, resets price for the new set) */}
-      <div className="mb-8 flex flex-wrap gap-2">
-        <FilterPill to={undefined} active={!category}>
-          All
-        </FilterPill>
-        {categories.map((c) => (
-          <FilterPill key={c.id} to={c.slug} active={category === c.slug}>
-            {c.title}
+      {/* Sticky filter bar — search/sort/price + category pills */}
+      <div className="sticky top-14 z-30 -mx-4 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:top-24">
+        <CatalogToolbar
+          q={q ?? ""}
+          sort={sort ?? DEFAULT_SORT}
+          bounds={bounds}
+          minPrice={minPrice ?? bounds.min}
+          maxPrice={maxPrice ?? bounds.max}
+          onChange={applyControls}
+        />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <FilterPill to={undefined} active={!category}>
+            All
           </FilterPill>
-        ))}
+          {categories.map((c) => (
+            <FilterPill key={c.id} to={c.slug} active={category === c.slug}>
+              {c.title}
+            </FilterPill>
+          ))}
+        </div>
       </div>
 
-      <p className="mb-4 text-sm text-muted-foreground">
-        {filtered.length} {filtered.length === 1 ? "product" : "products"}
+      {/* Result count + active-filter chips */}
+      <div className="mt-6 mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <p className="text-sm text-muted-foreground">
+          {filtered.length} {filtered.length === 1 ? "product" : "products"}
+        </p>
+        {anyFilter ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {searchActive ? (
+              <FilterChip onRemove={() => applyControls({ q: "" })}>
+                “{q}”
+              </FilterChip>
+            ) : null}
+            {priceActive ? (
+              <FilterChip
+                onRemove={() =>
+                  applyControls({ minPrice: bounds.min, maxPrice: bounds.max })
+                }
+              >
+                {formatPrice(minPrice ?? bounds.min)} –{" "}
+                {formatPrice(maxPrice ?? bounds.max)}
+              </FilterChip>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={clearFilters}
+              className="text-muted-foreground"
+            >
+              Clear all
+            </Button>
+          </div>
+        ) : null}
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState onClear={anyFilter ? clearFilters : undefined} />
+      ) : (
+        <ProductGrid products={filtered} />
+      )}
+    </div>
+  )
+}
+
+function FilterChip({
+  children,
+  onRemove,
+}: {
+  children: React.ReactNode
+  onRemove: () => void
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border bg-muted/40 py-1 pr-1 pl-3 text-xs">
+      {children}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label="Remove filter"
+        className="rounded-full p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+      >
+        <X className="size-3" />
+      </button>
+    </span>
+  )
+}
+
+function EmptyState({ onClear }: { onClear?: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-20 text-center">
+      <PackageSearch className="size-12 text-muted-foreground/40" />
+      <h2 className="font-heading text-xl font-semibold">No products match</h2>
+      <p className="max-w-sm text-muted-foreground">
+        Try a different search or adjust your filters.
       </p>
-      <ProductGrid products={filtered} />
+      {onClear ? (
+        <Button variant="outline" onClick={onClear} className="mt-1">
+          Clear filters
+        </Button>
+      ) : null}
     </div>
   )
 }
