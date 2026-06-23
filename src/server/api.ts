@@ -1,5 +1,6 @@
 import { Hono } from "hono"
 import { z } from "zod"
+import { OrderValidationError } from "@/lib/shop/order-items"
 import { createOrderSchema } from "@/lib/shop/types"
 import { validateDiscount } from "./discounts"
 import { getGiftCard } from "./giftcards"
@@ -47,8 +48,15 @@ api.post("/orders", async (c) => {
       400
     )
   }
-  const order = createOrder(parsed.data)
-  return c.json({ order }, 201)
+  try {
+    const order = await createOrder(parsed.data)
+    return c.json({ order }, 201)
+  } catch (err) {
+    if (err instanceof OrderValidationError) {
+      return c.json({ error: err.message }, 400)
+    }
+    throw err
+  }
 })
 
 api.get("/orders/:id", (c) => {

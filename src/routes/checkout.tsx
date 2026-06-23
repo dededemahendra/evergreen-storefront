@@ -124,7 +124,7 @@ function CheckoutPage() {
     try {
       let promo: Discount | null = null
       try {
-        promo = await validateDiscountCode(code, totals.subtotal)
+        promo = await validateDiscountCode(code, totals.physicalSubtotal)
       } catch {
         promo = null
       }

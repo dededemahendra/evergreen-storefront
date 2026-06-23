@@ -2,7 +2,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { randomUUID } from "node:crypto"
 import { siteConfig } from "@/config/site"
-import { computeTotals } from "@/lib/shop/pricing"
+import { getProducts } from "@/lib/shop/data"
+import { resolveOrderItems } from "@/lib/shop/order-items"
+import { computeTotals, roundMoney } from "@/lib/shop/pricing"
 import { createOrderSchema, orderSchema } from "@/lib/shop/types"
 import type {
   CreateOrderInput,
@@ -55,38 +57,53 @@ function persist() {
   }
 }
 
-export function createOrder(input: CreateOrderInput): Order {
-  const { items, customer, discountCode, giftCardCode } =
-    createOrderSchema.parse(input)
+export async function createOrder(input: CreateOrderInput): Promise<Order> {
+  const {
+    items: clientItems,
+    customer,
+    discountCode,
+    giftCardCode,
+  } = createOrderSchema.parse(input)
 
-  // Re-validate the promo code server-side (never trust the client). An invalid
-  // code is silently dropped so the order still succeeds at the correct price.
+  // SECURITY: never trust client-supplied prices/titles/kind. Re-resolve every
+  // line against the authoritative catalog so a tampered cart can't change what
+  // is charged or what gift-card value is minted. (Throws OrderValidationError
+  // for unknown items — the API turns that into a 400.)
+  const catalog = await getProducts({ data: {} })
+  const items = resolveOrderItems(clientItems, catalog)
+
+  // Re-validate the promo code server-side against the PHYSICAL subtotal (gift
+  // cards don't count toward minimums or discounts). Invalid codes are dropped
+  // so the order still succeeds at the correct price.
   let discount: Discount | undefined
   if (discountCode) {
-    const subtotal = computeTotals(items).subtotal
-    const result = validateDiscount(discountCode, subtotal)
+    const result = validateDiscount(
+      discountCode,
+      computeTotals(items).physicalSubtotal
+    )
     if (result.ok) discount = result.discount
   }
 
-  // Re-check the gift card balance server-side before applying it.
-  let giftCardBalance: number | undefined
+  const totals = computeTotals(items, { discount })
+
+  // Apply a gift card atomically: redeemGiftCard's return value is the single
+  // source of truth for how much was actually deducted, so concurrent orders
+  // can't double-spend the same balance.
+  let giftCardApplied = 0
   let appliedGiftCardCode: string | undefined
   if (giftCardCode) {
     const card = getGiftCard(giftCardCode)
-    if (card && card.balance > 0) {
-      giftCardBalance = card.balance
-      appliedGiftCardCode = card.code
+    if (card) {
+      const { applied } = redeemGiftCard(card.code, totals.total)
+      if (applied > 0) {
+        giftCardApplied = applied
+        appliedGiftCardCode = card.code
+      }
     }
   }
+  const amountDue = roundMoney(totals.total - giftCardApplied)
 
-  const totals = computeTotals(items, { discount, giftCardBalance })
-
-  // Redeem the gift card for what was actually applied (decrements its balance).
-  if (appliedGiftCardCode && totals.giftCardApplied > 0) {
-    redeemGiftCard(appliedGiftCardCode, totals.giftCardApplied)
-  }
-
-  // Issue a gift card per gift-card line unit purchased in this order.
+  // Issue a gift card per gift-card unit purchased, at the TRUSTED price.
   const issuedGiftCards: IssuedGiftCard[] = []
   for (const item of items) {
     if (item.kind === "gift_card") {
@@ -111,9 +128,9 @@ export function createOrder(input: CreateOrderInput): Order {
     shipping: totals.shipping,
     tax: totals.tax,
     total: totals.total,
-    giftCardCode: totals.giftCardApplied > 0 ? appliedGiftCardCode : undefined,
-    giftCardApplied: totals.giftCardApplied,
-    amountDue: totals.amountDue,
+    giftCardCode: giftCardApplied > 0 ? appliedGiftCardCode : undefined,
+    giftCardApplied,
+    amountDue,
     issuedGiftCards: issuedGiftCards.length > 0 ? issuedGiftCards : undefined,
     currency: siteConfig.currency,
     status: "paid",
