@@ -22,6 +22,8 @@ export function roundMoney(amount: number): number {
 
 export interface OrderTotals {
   subtotal: number
+  /** Subtotal of physical (non-gift-card) items — what discounts/minimums use. */
+  physicalSubtotal: number
   discountAmount: number
   shipping: number
   tax: number
@@ -91,6 +93,7 @@ export function computeTotals(
 
   return {
     subtotal,
+    physicalSubtotal,
     discountAmount: discountAmt,
     shipping,
     tax,
