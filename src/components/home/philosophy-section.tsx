@@ -53,7 +53,7 @@ export function PhilosophySection() {
     <section id="products" className="bg-background">
       {/* Scroll-Animated Product Grid */}
       <div ref={sectionRef} className="relative" style={{ height: "200vh" }}>
-        <div className="sticky top-0 h-screen flex items-center justify-center">
+        <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
           <div className="relative w-full">
             {/* Title - positioned behind the blocks */}
             <div
