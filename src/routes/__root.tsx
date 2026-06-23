@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   createRootRoute,
+  useRouterState,
 } from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
@@ -36,6 +37,11 @@ export const Route = createRootRoute({
 })
 
 function RootLayout() {
+  // The homepage replicates an editorial template with its own floating header,
+  // so the global site header is suppressed on "/" only. The footer is kept.
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const isHome = pathname === "/"
+
   // Load persisted cart + wishlist from localStorage once, after the first
   // paint, so server HTML and the first client render match.
   useEffect(() => {
@@ -45,7 +51,7 @@ function RootLayout() {
 
   return (
     <div className="flex min-h-svh flex-col">
-      <SiteHeader />
+      {!isHome && <SiteHeader />}
       <main className="flex-1">
         <Outlet />
       </main>
