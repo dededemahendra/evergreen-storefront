@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import { AddToCartForm } from "@/components/product/add-to-cart-form"
 import { ProductReviews } from "@/components/product/product-reviews"
 import { ProductRow } from "@/components/product/product-row"
+import { ShareButton } from "@/components/product/share-button"
 import { StarRating } from "@/components/product/star-rating"
 import { getFeaturedProducts, getProduct, getProducts } from "@/lib/shop/data"
 import { imageOrPlaceholder } from "@/lib/shop/images"
@@ -126,14 +127,23 @@ function ProductPage() {
         {/* Info */}
         <div className="space-y-6">
           <div className="space-y-2">
-            {product.categoryTitle ? (
-              <p className="text-sm text-muted-foreground">
-                {product.categoryTitle}
-              </p>
-            ) : null}
-            <h1 className="font-heading text-3xl font-semibold">
-              {product.title}
-            </h1>
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                {product.categoryTitle ? (
+                  <p className="text-sm text-muted-foreground">
+                    {product.categoryTitle}
+                  </p>
+                ) : null}
+                <h1 className="font-heading text-3xl font-semibold">
+                  {product.title}
+                </h1>
+              </div>
+              <ShareButton
+                title={product.title}
+                text={product.description}
+                className="mt-1 shrink-0"
+              />
+            </div>
             <StarRating rating={product.rating} count={product.reviewCount} />
           </div>
 
