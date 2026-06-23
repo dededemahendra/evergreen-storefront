@@ -114,8 +114,8 @@ function ProductsPage() {
         </p>
       </header>
 
-      {/* Sticky filter bar — search/sort/price + category pills */}
-      <div className="sticky top-14 z-30 -mx-4 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:top-24">
+      {/* Filter bar — search/sort/price + category pills */}
+      <div>
         <CatalogToolbar
           q={q ?? ""}
           sort={sort ?? DEFAULT_SORT}
